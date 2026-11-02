@@ -35,7 +35,7 @@ A MERN application for students to submit and track campus complaints, and for a
 
 ## Run locally
 
-1. Copy `.env.example` to `.env`.
+1. Copy `backend/.env.example` to `backend/.env`.
 2. Set `MONGODB_URI` to your MongoDB connection string and replace `JWT_SECRET` with a long, random secret.
 3. Install dependencies from the project root:
 

@@ -17,17 +17,13 @@ import {
   Check,
 } from 'lucide-react';
 import { defaultDepartments, demoAccounts } from '../constants/defaults';
+import { api, writeSession } from '../services/api';
 
-export default function AuthScreen({
-  mode,
-  onModeChange,
-  role,
-  onRoleChange,
-  onSubmit,
-  error,
-  loading,
-  hodDepartments = defaultDepartments,
-}) {
+export default function Login({ onLogin, hodDepartments = defaultDepartments }) {
+  const [mode, setMode] = useState('login');
+  const [role, setRole] = useState('student');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const registering = mode === 'register';
 
   // Form input state
@@ -40,9 +36,40 @@ export default function AuthScreen({
   );
   const [autoFilledRole, setAutoFilledRole] = useState('');
 
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+    const formData = new FormData(event.currentTarget);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
+      const result = await api(`/auth/${registering ? 'register' : 'login'}`, {
+        method: 'POST',
+        body: JSON.stringify({ ...payload, role: registering ? 'student' : role }),
+      });
+      writeSession(result);
+      onLogin(result);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function changeMode(nextMode) {
+    setMode(nextMode);
+    setError('');
+  }
+
+  function changeRole(nextRole) {
+    setRole(nextRole);
+    setError('');
+  }
+
   // Quick One-Click Demo Credential Auto-Fill
   function fillDemo(accountRole, department = selectedHodDepartment) {
-    onRoleChange(accountRole);
+    changeRole(accountRole);
     setAutoFilledRole(accountRole === 'hod' ? `${department} HOD` : accountRole);
 
     if (accountRole === 'hod') {
@@ -236,14 +263,14 @@ export default function AuthScreen({
             <button
               type="button"
               className={`mode-tab ${!registering ? 'mode-tab-active' : ''}`}
-              onClick={() => onModeChange('login')}
+              onClick={() => changeMode('login')}
             >
               Sign In
             </button>
             <button
               type="button"
               className={`mode-tab ${registering ? 'mode-tab-active' : ''}`}
-              onClick={() => onModeChange('register')}
+              onClick={() => changeMode('register')}
             >
               Student Register
             </button>
@@ -265,7 +292,7 @@ export default function AuthScreen({
                       className={`role-select-card role-${r.accent} ${
                         isSelected ? 'role-selected' : ''
                       }`}
-                      onClick={() => onRoleChange(r.id)}
+                      onClick={() => changeRole(r.id)}
                     >
                       <div className="role-card-top">
                         <span className="role-icon">{r.icon}</span>
@@ -349,7 +376,7 @@ export default function AuthScreen({
           )}
 
           {/* Login / Register Form */}
-          <form className="auth-form-card" onSubmit={onSubmit}>
+          <form className="auth-form-card" onSubmit={handleSubmit}>
             {registering && (
               <div className="input-field-group">
                 <label htmlFor="auth-name">Full Name</label>

@@ -39,7 +39,7 @@ import {
 } from './constants/defaults';
 
 // Modular Child Components
-import AuthScreen from './components/AuthScreen';
+import Login from './components/Login';
 import StatCard from './components/StatCard';
 import StatusBadge from './components/StatusBadge';
 import BulkActionsBar from './components/BulkActionsBar';
@@ -55,10 +55,6 @@ function App() {
   // ==========================================
   const [session, setSession] = useState(readSession);
   const [authChecking, setAuthChecking] = useState(Boolean(readSession()?.token));
-  const [authMode, setAuthMode] = useState('login');
-  const [loginRole, setLoginRole] = useState('student');
-  const [authError, setAuthError] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
 
   // ==========================================
   // 2. Application Data & Filtering State
@@ -252,28 +248,6 @@ function App() {
     const timer = window.setTimeout(() => setToast(''), 3200);
     return () => window.clearTimeout(timer);
   }, [toast]);
-
-  // Handle Login & Registration
-  async function handleAuth(event) {
-    event.preventDefault();
-    setAuthError('');
-    setAuthLoading(true);
-    const formData = new FormData(event.currentTarget);
-    const payload = Object.fromEntries(formData.entries());
-    try {
-      const result = await api(`/auth/${authMode === 'register' ? 'register' : 'login'}`, {
-        method: 'POST',
-        body: JSON.stringify({ ...payload, role: authMode === 'register' ? 'student' : loginRole }),
-      });
-      writeSession(result);
-      setSession(result);
-      setAuthChecking(false);
-    } catch (requestError) {
-      setAuthError(requestError.message);
-    } finally {
-      setAuthLoading(false);
-    }
-  }
 
   // Filtered complaints based on active tabs, department filter, and search text
   const visibleComplaints = useMemo(() => complaints.filter((complaint) => {
@@ -644,14 +618,11 @@ function App() {
   // Unauthenticated Screen
   if (!session) {
     return (
-      <AuthScreen
-        mode={authMode}
-        onModeChange={(mode) => { setAuthMode(mode); setAuthError(''); }}
-        role={loginRole}
-        onRoleChange={(role) => { setLoginRole(role); setAuthError(''); }}
-        onSubmit={handleAuth}
-        error={authError}
-        loading={authLoading}
+      <Login
+        onLogin={(newSession) => {
+          setSession(newSession);
+          setAuthChecking(false);
+        }}
         hodDepartments={departments}
       />
     );
