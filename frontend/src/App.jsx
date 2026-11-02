@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 // Utilities, Constants, and Services
-import { api, readSession, writeSession } from './services/api';
+import { API_ORIGIN, api, readSession, writeSession } from './services/api';
 import { formatDate, getTrackingId } from './utils/helpers';
 import {
   defaultCategories,
@@ -179,7 +179,7 @@ function App() {
   useEffect(() => {
     if (!session?.token || authChecking) return undefined;
 
-    const socket = io({ auth: { token: session.token } });
+    const socket = io(API_ORIGIN || undefined, { auth: { token: session.token } });
 
     // Complaint created or updated
     socket.on('complaint:updated', (complaint) => {

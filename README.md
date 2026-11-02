@@ -76,6 +76,8 @@ A MERN application for students to submit and track campus complaints, and for a
 
 The API runs on port 5000 by default. The Vite development server proxies `/api` and the Socket.IO websocket connection to it. To create a production frontend bundle, run `npm run build`; set `NODE_ENV=production` before running `npm start` to serve the bundle from Express.
 
+For a separate Vercel frontend deployment, set the project root to `frontend` and add `VITE_API_URL` as the public origin of the deployed backend (for example, `https://your-backend.example.com`, without `/api`). Deploy the backend as a persistent Node.js service and configure `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_URL` there; set `CLIENT_URL` to the deployed Vercel site origin. The backend uses Socket.IO and a recurring escalation monitor, so it must run as a persistent service rather than a short-lived serverless function.
+
 ## Main API routes
 
 | Method | Route | Access | Description |
